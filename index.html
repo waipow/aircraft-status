@@ -15,9 +15,7 @@
         <div id="sidebar-content"></div>
     </div>
     
-    
     <div id="aircraftListWrapper">
-        
         <div id="aircraftListContainer">
             <div id="statusSummary">
                 <p>
@@ -36,8 +34,50 @@
             </ul>
         </div>
     </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="flightConfig.js"></script>
     <script src="script.js"></script>
+
+    <!-- โค้ด JavaScript เพิ่มเติม -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById('sidebar');
+            const aircraftListWrapper = document.getElementById('aircraftListWrapper');
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const toggleListBtn = document.getElementById('toggleListBtn');
+            
+            // ฟังก์ชันสำหรับเปิด Sidebar
+            function openSidebar() {
+                sidebar.style.display = 'block';
+                aircraftListWrapper.style.display = 'none';
+            }
+            
+            // ฟังก์ชันสำหรับปิด Sidebar
+            function closeSidebar() {
+                sidebar.style.display = 'none';
+                aircraftListWrapper.style.display = 'block';
+            }
+
+            // เมื่อคลิกที่ปุ่ม toggleSidebarBtn เปิด/ปิด sidebar
+            toggleSidebarBtn.addEventListener('click', function () {
+                if (sidebar.style.display === 'none' || sidebar.style.display === '') {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            });
+
+            // เมื่อคลิกที่ปุ่ม toggleListBtn ให้ซ่อน sidebar และแสดง aircraft list
+            toggleListBtn.addEventListener('click', function () {
+                closeSidebar(); // ซ่อน sidebar
+            });
+
+            // เริ่มต้นกำหนดให้ sidebar ซ่อนอยู่เมื่อโหลดหน้า
+            closeSidebar();
+        });
+    </script>
+
 </body>
 </html>
+

@@ -22,15 +22,14 @@ body, html {
     position: fixed;
     right: 0;
     top: 0;
-    width: 260px;  /* ลดจาก 300px เป็น 260px */
+    width: 260px; /* ขนาด sidebar */
     height: 100%;
     background: white;
     box-shadow: -3px 0px 15px rgba(0, 0, 0, 0.3);
-    display: none;
+    display: none;  /* ซ่อน sidebar */
     padding: 20px;
     z-index: 1000;
     overflow-y: auto;
-    border-left: 4px solid #007bff;
 }
 
 /* Popup title */
@@ -154,17 +153,15 @@ body, html {
 }
 
 #aircraftListWrapper {
-    position: fixed;  /* คงที่ */
+    position: fixed;
     top: 0;
     left: 0;
-    z-index: 1000;
+    z-index: 999; /* ให้แสดงขึ้นมาเหนือส่วนที่อยู่ด้านหลัง */
     width: 250px;
-    height: 100vh;  /* ให้เต็มหน้าจอ */
+    height: 100vh;
     padding: 10px;
-    overflow-y: auto;  /* เพิ่มการเลื่อนเมื่อมีรายการมาก */
-    display: block;  /* ปรับให้แสดงออกมา */
-    border: none;  /* เอากรอบทั้งหมดออก */
-    box-shadow: none;  /* เอากรอบเงาออก */
+    overflow-y: auto;
+    display: block;  /* ให้แสดงลิสต์เมื่อ sidebar หายไป */
 }
 
 #aircraftListContainer {
@@ -191,6 +188,26 @@ body, html {
     max-height: 400px;  /* ปรับความสูงของรายการเครื่องบิน */
     overflow-y: scroll;  /* ทำให้เลื่อนได้ แต่ไม่แสดงแถบเลื่อน */
     scrollbar-width: none; /* สำหรับ Firefox ปิดแถบเลื่อน */
+}
+
+
+/* สำหรับปุ่ม toggle ให้ซ่อนหรือตัวเลือกให้ปรับแสดง */
+#toggleListBtn, #toggleSidebarBtn {
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#toggleSidebarBtn {
+    background-color: #00b100;
+    color: white;
+}
+
+#toggleListBtn {
+    background-color: #007bff;
+    color: white;
 }
 
 #aircraftList::-webkit-scrollbar {
@@ -253,38 +270,73 @@ body, html {
     border-radius: 5px;
 }
 
+/* เพิ่ม Meta Viewport */
+@viewport {
+    width: device-width;
+    initial-scale: 1.0;
+}
+
 /* Mobile responsive adjustments */
 @media screen and (max-width: 768px) {
     #sidebar {
-        width: 80%;  /* ลดขนาด sidebar ลงเหลือ 80% ของหน้าจอ */
+        width: 56%;  /* ลดขนาด sidebar ลงเหลือ 56% ของหน้าจอ */
         padding: 15px;  /* ลด padding ของ sidebar */
         font-size: 14px; /* ลดขนาดฟอนต์ */
     }
 
     #aircraftListContainer {
-        width: 90%;  /* ให้ลิสรายการเครื่องบินมีขนาดที่พอดีกับหน้าจอมือถือ */
-        top: 10px; /* ให้รายการไม่ติดกับด้านบน */
+        width: 30%;  /* ลดขนาด list ลงจากเดิม 50% เป็น 30% */
+        top: -6%; /* ให้รายการไม่ติดกับด้านบน */
+        left: 17%;  /* ชิดขวาบน */
+        position: fixed;  /* ให้ลิสแสดงคงที่ */
+        font-size: 10px;  /* ลดขนาดฟอนต์ของรายการเครื่องบิน */
+        padding: 8px; /* ลด padding ภายใน */
     }
 
     #statusSummary {
-        font-size: 14px;  /* ลดขนาดฟอนต์ใน mobile */
+        font-size: 12px;  /* ลดขนาดฟอนต์ใน mobile */
     }
 
     .aircraft-item {
-        font-size: 12px; /* ขนาดฟอนต์ของรายการเครื่องบินในมือถือ */
+        font-size: 8px; /* ขนาดฟอนต์ของรายการเครื่องบินในมือถือ */
+        padding: 6px; /* ลด padding ของรายการ */
+    }
+
+    #toggleListBtn {
+        font-size: 12px;  /* ลดขนาดฟอนต์ปุ่ม */
+        padding: 6px 12px; /* ลดขนาด padding ปุ่ม */
+    }
+
+    .aircraft-list {
+        font-size: 8px; /* ขนาดฟอนต์ของลิสต์เครื่องบิน */
     }
 }
 
-/* สำหรับหน้าจอที่ใหญ่กว่า */
-@media screen and (min-width: 769px) {
-    #sidebar {
-        width: 260px;  /* คงขนาดเดิมของ sidebar */
-    }
 
+
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    /* สไตล์สำหรับแท็บเล็ต */
     #aircraftListContainer {
-        width: 80%;  /* สำหรับหน้าจอที่กว้างขึ้น ให้อยู่ที่ 80% */
-        top: 50px;  /* เพิ่มระยะห่างจากด้านบน */
+        width: 40%;
+        top: 5%;
+        right: 5%;
+        font-size: 14px;
+        padding: 8px;
     }
 }
+
+/* สำหรับเดสก์ท็อป */
+@media screen and (min-width: 1025px) {
+    /* สไตล์สำหรับเดสก์ท็อป */
+    #aircraftListContainer {
+        width: 30%;
+        top: 5%;
+        right: 5%;
+        font-size: 16px;
+        padding: 10px;
+    }
+}
+
 
 
