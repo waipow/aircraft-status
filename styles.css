@@ -315,26 +315,25 @@ body, html {
 
 
 
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-    /* สไตล์สำหรับแท็บเล็ต */
-    #aircraftListContainer {
-        width: 40%;
-        top: 5%;
-        right: 5%;
+/* สำหรับหน้าจอที่ใหญ่กว่า 769px */
+@media screen and (min-width: 769px) {
+    #sidebar {
+        width: 260px;  /* คงขนาดเดิมของ sidebar */
+        padding: 15px;
         font-size: 14px;
-        padding: 8px;
     }
-}
 
-/* สำหรับเดสก์ท็อป */
-@media screen and (min-width: 1025px) {
-    /* สไตล์สำหรับเดสก์ท็อป */
     #aircraftListContainer {
-        width: 30%;
-        top: 5%;
-        right: 5%;
-        font-size: 16px;
-        padding: 10px;
+        width: 80%;  /* ให้ลิสรายการเครื่องบินอยู่ที่ 80% */
+        top: 50px;
+    }
+
+    .popup-title {
+        font-size: 16px;  /* ปรับขนาดหัวข้อใหญ่ขึ้น */
+    }
+
+    .aircraft-item {
+        font-size: 14px;  /* เพิ่มขนาดฟอนต์ให้เหมาะสม */
     }
 }
 
