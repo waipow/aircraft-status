@@ -348,9 +348,10 @@ async function updateSidebar(flight) {
 
     document.getElementById('sidebar-content').innerHTML = `
         <button class="close-btn" onclick="closeSidebar()">✖</button>
-        <div class="status-bar" style="background: ${flight.type === 'helicopter' ? (flight.status.toLowerCase() === "yes" ? "#28a745" : "#dc3545") : getStatusGradient(flight.status)};">
+        <div class="status-bar" style="background: ${flight.status.toLowerCase() === "yes" ? "#28a745" : "#dc3545"};">
             <span class="status-text">${flight.status.toLowerCase() === "yes" ? "ใช้งานได้" : "ไม่สามารถใช้งาน"}</span>
         </div>
+
 
         <h2 class="popup-title">${flight.name} (${flight.aircraftNumber})</h2>
         <img src="${aircraftImage}" alt="${flight.name}" class="airplane-image">
