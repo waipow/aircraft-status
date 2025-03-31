@@ -2,19 +2,104 @@ document.addEventListener("DOMContentLoaded", async function () {
     await fetchFlightData();  // โหลดข้อมูลจาก Google Sheet
     initMap();  // แสดงแผนที่
     setupAircraftListToggle(); // ตั้งค่าปุ่มแสดง/ซ่อนลิสต์
+
     const toggleListBtn = document.getElementById("toggleListBtn");
     const aircraftList = document.getElementById("aircraftList");
 
     toggleListBtn.addEventListener("click", () => {
         if (aircraftList.style.display === "none") {
-            aircraftList.style.display = "block";  // แสดงรายการ
-            toggleListBtn.textContent = "▲ ปิดรายการเครื่องบิน";  // เปลี่ยนข้อความปุ่ม
+            aircraftList.style.display = "block";
+            toggleListBtn.textContent = "▲ ปิดรายการเครื่องบิน";
         } else {
-            aircraftList.style.display = "none";  // ซ่อนรายการ
-            toggleListBtn.textContent = "▼ เปิดรายการเครื่องบิน";  // เปลี่ยนข้อความปุ่ม
+            aircraftList.style.display = "none";
+            toggleListBtn.textContent = "▼ เปิดรายการเครื่องบิน";
         }
     });
+
+     // ฟังก์ชันกรองภารกิจ/ฐานที่ตั้ง หรือ หมายเลขเครื่องบิน
+     const missionBaseFilterInput = document.getElementById("missionBaseFilter");
+     missionBaseFilterInput.addEventListener("input", function () {
+        filterAircraftByNumberOrNameOrMission(missionBaseFilterInput.value.trim());
+     });
 });
+
+let markers = []; // ตัวแปรเก็บข้อมูลมาร์กเกอร์
+// ฟังก์ชันกรองเครื่องบินตามหมายเลขเครื่องบิน, ชื่อเครื่องบิน หรือภารกิจ/ฐานที่ตั้ง
+// ฟังก์ชันกรองการค้นหาจากหมายเลขเครื่องบิน, ชื่อเครื่องบิน, หรือภารกิจ/ฐานที่ตั้ง
+
+function showMarkers(filteredFlights) {
+    markers.forEach(({ flight, marker }) => {
+        if (filteredFlights.some(f => f.aircraftNumber === flight.aircraftNumber)) {
+            marker.addTo(map); // แสดงมาร์กเกอร์ที่ตรงกับคำค้นหา
+        } else {
+            map.removeLayer(marker); // ซ่อนมาร์กเกอร์ที่ไม่ตรงกับคำค้นหา
+        }
+    });
+}
+
+// ฟังก์ชันในการแสดงมาร์กเกอร์ทั้งหมด
+function showAllMarkers() {
+    markers.forEach(({ marker }) => {
+        marker.addTo(map); // แสดงมาร์กเกอร์ทั้งหมด
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // เรียกใช้ฟังก์ชันที่ทำให้ปุ่มเปิด/ปิดรายการทำงาน
+    const toggleListBtn = document.getElementById("toggleListBtn");
+    const aircraftList = document.getElementById("aircraftList");
+
+    // ตรวจสอบว่าเราสามารถเข้าถึงปุ่มได้หรือไม่
+    if (toggleListBtn) {
+        toggleListBtn.addEventListener("click", function () {
+            if (aircraftList.style.display === "none" || aircraftList.style.display === "") {
+                // ถ้าปัจจุบันซ่อนอยู่ ให้แสดงรายการ
+                aircraftList.style.display = "block";
+                toggleListBtn.textContent = "▲ ปิดรายการเครื่องบิน"; // เปลี่ยนข้อความปุ่ม
+            } else {
+                // ถ้าปัจจุบันแสดงอยู่ ให้ซ่อนรายการ
+                aircraftList.style.display = "none";
+                toggleListBtn.textContent = "▼ เปิดรายการเครื่องบิน"; // เปลี่ยนข้อความปุ่ม
+            }
+        });
+    }
+});
+
+
+
+// ฟังก์ชันกรองการค้นหาจากหมายเลขเครื่องบิน, ชื่อเครื่องบิน, หรือภารกิจ/ฐานที่ตั้ง
+function filterAircraftByNumberOrNameOrMission(searchTerm) {
+    const listContainer = document.getElementById("aircraftList");
+    const noResultsMessage = document.getElementById("noResultsMessage");
+
+    // ถ้าไม่มีคำค้นหา ให้แสดงเครื่องบินทั้งหมด
+    if (searchTerm === "") {
+        generateAircraftList(flightData);
+        listContainer.style.display = "block";
+        if (noResultsMessage) noResultsMessage.style.display = "none";
+        showAllMarkers();  // แสดง markers ทั้งหมด
+        return;
+    }
+
+    // กรองข้อมูลตามหมายเลขเครื่องบิน, ชื่อเครื่องบิน หรือภารกิจ/ฐานที่ตั้ง
+    const filteredFlights = flightData.filter(flight =>
+        flight.aircraftNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (flight.name && flight.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        flight.missionBase.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // ถ้ามีผลลัพธ์ แสดงรายการใหม่ ถ้าไม่มี ให้ซ่อน
+    if (filteredFlights.length > 0) {
+        generateAircraftList(filteredFlights);
+        listContainer.style.display = "block";
+        if (noResultsMessage) noResultsMessage.style.display = "none";
+        showMarkers(filteredFlights);  // แสดง markers ที่ตรงกับการค้นหา
+    } else {
+        listContainer.style.display = "none";
+        if (noResultsMessage) noResultsMessage.style.display = "block";
+        hideMarkers();  // ซ่อน markers เมื่อไม่มีผลลัพธ์
+    }
+}
 
 const provinceCoordinates = {
     "เชียงใหม่": [18.7883, 98.9853],
@@ -100,34 +185,60 @@ function formatTime(timeString) {
     return timeString;
 }
 
-function generateAircraftList() {
+// ฟังก์ชันสร้างรายการเครื่องบิน
+// ฟังก์ชันสร้างรายการเครื่องบิน
+// ฟังก์ชันสำหรับการแสดงรายการเครื่องบิน
+function generateAircraftList(filteredFlights = flightData) {
     const listContainer = document.getElementById('aircraftList');
-    listContainer.innerHTML = ""; // ล้างข้อมูลเก่า
+    listContainer.innerHTML = ""; // ล้างรายการเดิม
 
-    flightData.forEach(flight => {
+    let availableCount = 0;
+    let unavailableCount = 0;
+
+    // ตรวจสอบว่ามีข้อมูลหรือไม่
+    if (filteredFlights.length === 0) {
+        listContainer.innerHTML = "<p>❌ ไม่พบเครื่องบินที่ตรงกับการค้นหา</p>";
+        return;
+    }
+
+    filteredFlights.forEach(flight => {
         const listItem = document.createElement('li');
         listItem.classList.add("aircraft-item");
 
-        // กำหนด emoji และสีตามสถานะของเครื่องบิน
-        const statusIcon = flight.status === "yes" ? "✔" : "✖";
-        const statusColor = flight.status === "yes" ? "green" : "red";
+        // กำหนดสัญลักษณ์สถานะ (สีเขียว/แดง)
+        const statusIcon = document.createElement('span');
+        statusIcon.style.width = '10px';
+        statusIcon.style.height = '10px';
+        statusIcon.style.borderRadius = '50%';
+        statusIcon.style.marginRight = '10px';
 
-        // ใส่ emoji ข้างหน้าและชื่อเครื่องบิน
-        listItem.innerHTML = `
-            <span class="status-icon ${statusColor}">${statusIcon}</span>
-            ${flight.name} (${flight.aircraftNumber})
-        `;
+        if (flight.status.toLowerCase() === "yes") {
+            statusIcon.style.backgroundColor = 'green'; // ใช้งานได้
+            availableCount++;
+        } else {
+            statusIcon.style.backgroundColor = 'red'; // ใช้งานไม่ได้
+            unavailableCount++;
+        }
 
-        // เพิ่มเหตุการณ์คลิกเพื่ออัปเดตข้อมูลและแสดงแผนที่
+        listItem.textContent = `${flight.name} (${flight.aircraftNumber})`;
+        listItem.prepend(statusIcon); // ใส่สัญลักษณ์ด้านหน้า
+
         listItem.addEventListener("click", () => {
             updateSidebar(flight);
             map.setView([flight.latitude, flight.longitude], 8);
         });
 
-        // เพิ่มรายการเครื่องบินในลิสต์
         listContainer.appendChild(listItem);
     });
+
+    // อัปเดตสรุปจำนวนเครื่องบิน
+    const statusSummary = document.getElementById('statusSummary');
+    statusSummary.innerHTML = `
+        <p>✔️ ใช้งานได้: ${availableCount} </p>
+        <p>❌ ใช้งานไม่ได้: ${unavailableCount} </p>
+    `;
 }
+
 
 
 
@@ -253,42 +364,137 @@ function addJitter([lat, lng]) {
 }
 
 let map;
+
+
+
 function initMap() {
     map = L.map('map').setView([13.7367, 100.5231], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+    // ลูปสร้างมาร์กเกอร์
     flightData.forEach(flight => {
-        // ตรวจสอบว่าเป็นเฮลิคอปเตอร์หรือไม่ (ใช้ flight.type ที่ตั้งจากฟังก์ชัน fetchFlightData)
-        const isHelicopter = flight.type === "helicopter"; // แก้เป็น flight.type
+        // ตรวจสอบว่าเป็นเฮลิคอปเตอร์หรือไม่
+        const isHelicopter = flight.type === "helicopter";
+        const iconUrl = isHelicopter ? "helicopter.svg" : "airplane.svg"; // เลือกไอคอนตามประเภทยาน
 
-        // ตั้งค่า drop-shadow ตามสถานะ
+        // ตั้งค่าสีของเงาตามสถานะ
         const shadowColor = flight.status.toUpperCase() === "YES" 
-            ? "rgb(4, 172, 54)"  // เขียว
-            : "rgba(255, 0, 0, 1)";  // แดง
+            ? "rgb(4, 172, 54)"  // สีเขียวสำหรับใช้งานได้
+            : "rgba(255, 0, 0, 1)";  // สีแดงสำหรับใช้งานไม่ได้
 
-        // เลือกไอคอนตามประเภทของยานพาหนะ
-        const iconUrl = isHelicopter
-            ? "helicopter.svg" // เฮลิคอปเตอร์
-            : "airplane.svg"; // เครื่องบิน
-
-        const vehicleIcon = L.icon({
-            iconUrl: iconUrl,
-            iconSize: isHelicopter ? [34, 34] : [34, 34], // ปรับขนาดเฮลิคอปเตอร์ให้ใหญ่ขึ้นนิดหน่อย
+        // สร้างไอคอนแบบ divIcon
+        const vehicleIcon = L.divIcon({
+            className: 'custom-icon',  // ตั้งคลาส CSS เพื่อจัดการสไตล์
+            html: `<img src="${iconUrl}" style="width: 34px; height: 34px; filter: drop-shadow(0 0 0.5px ${shadowColor})">`,  // ใช้ filter ใน inline CSS
+            iconSize: [34, 34],
             iconAnchor: [16, 32],
             popupAnchor: [0, -32]
         });
 
-        var marker = L.marker([flight.latitude, flight.longitude], { icon: vehicleIcon })
+        // สร้างมาร์กเกอร์
+        const marker = L.marker([flight.latitude, flight.longitude], { icon: vehicleIcon })
             .addTo(map)
             .bindTooltip(`${flight.aircraftNumber}`, { permanent: false, direction: "top" })
             .on('click', function () {
                 updateSidebar(flight);
             });
 
-        // ปรับเอฟเฟกต์เงา
-        marker._icon.style.filter = `brightness(1) drop-shadow(0 0 0.5px ${shadowColor}) drop-shadow(0 0 0.5px ${shadowColor})`;
+        // เก็บข้อมูลมาร์กเกอร์
+        markers.push({ flight, marker });
     });
 }
+
+window.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('clearSearchBtn').addEventListener('click', function () {
+        // เคลียร์ค่าที่กรอกในช่องค้นหา
+        document.getElementById('missionBaseFilter').value = "";
+
+        // ลบมาร์กเกอร์ที่แสดงอยู่ในแผนที่
+        markers.forEach(function(markerObj) {
+            markerObj.marker.remove(); // ลบมาร์กเกอร์
+        });
+        markers = []; // รีเซ็ต array ของมาร์กเกอร์
+
+        // หากต้องการให้ลิสรายการเครื่องบินแสดงทั้งหมดเมื่อเคลียร์การค้นหา
+        generateAircraftList(flightData);
+
+        // เพิ่มมาร์กเกอร์ใหม่ทั้งหมดที่แผนที่
+        flightData.forEach(flight => {
+            // ตรวจสอบว่าเป็นเฮลิคอปเตอร์หรือไม่
+            const isHelicopter = flight.type === "helicopter";
+            const iconUrl = isHelicopter ? "helicopter.svg" : "airplane.svg"; // เลือกไอคอนตามประเภทยาน
+
+            // ตั้งค่าสีของเงาตามสถานะ
+            const shadowColor = flight.status.toUpperCase() === "YES" 
+                ? "rgb(4, 172, 54)"  // สีเขียวสำหรับใช้งานได้
+                : "rgba(255, 0, 0, 1)";  // สีแดงสำหรับใช้งานไม่ได้
+
+            // สร้างไอคอนแบบ divIcon
+            const vehicleIcon = L.divIcon({
+                className: 'custom-icon',  // ตั้งคลาส CSS เพื่อจัดการสไตล์
+                html: `<img src="${iconUrl}" style="width: 34px; height: 34px; filter: drop-shadow(0 0 0.5px ${shadowColor})">`,  // ใช้ filter ใน inline CSS
+                iconSize: [34, 34],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            });
+
+            // สร้างมาร์กเกอร์
+            const marker = L.marker([flight.latitude, flight.longitude], { icon: vehicleIcon })
+                .addTo(map)
+                .bindTooltip(`${flight.aircraftNumber}`, { permanent: false, direction: "top" })
+                .on('click', function () {
+                    updateSidebar(flight);
+                });
+
+            // เก็บข้อมูลมาร์กเกอร์
+            markers.push({ flight, marker });
+        });
+    });
+});
+
+
+
+
+
+
+// ฟังก์ชันกรองเครื่องบินตามหมายเลขเครื่องหรือภารกิจ
+function filterAircraftByMissionBase(searchTerm) {
+    const listContainer = document.getElementById("aircraftList");
+
+    // ถ้าไม่มีคำค้นหา ให้แสดงเครื่องบินทั้งหมด
+    if (searchTerm === "") {
+        markers.forEach(({ marker }) => {
+            marker.addTo(map); // แสดงมาร์กเกอร์ทั้งหมด
+        });
+        listContainer.style.display = "block"; // แสดงรายการทั้งหมด
+        return;
+    }
+
+    // กรองข้อมูลตามหมายเลขเครื่องบิน หรือ ภารกิจ/ฐานที่ตั้ง
+    const filteredFlights = flightData.filter(flight =>
+        flight.aircraftNumber.toLowerCase().includes(searchTerm.toLowerCase()) || // ค้นหาจากหมายเลขเครื่องบิน
+        flight.missionBase.toLowerCase().includes(searchTerm.toLowerCase()) // ค้นหาจากภารกิจ/ฐานที่ตั้ง
+    );
+
+    // แสดง/ซ่อนมาร์กเกอร์ตามการค้นหา
+    markers.forEach(({ flight, marker }) => {
+        if (filteredFlights.some(f => f.aircraftNumber === flight.aircraftNumber)) {
+            marker.addTo(map); // แสดงมาร์กเกอร์ที่ตรงกับคำค้นหา
+        } else {
+            map.removeLayer(marker); // ซ่อนมาร์กเกอร์ที่ไม่ตรงกับคำค้นหา
+        }
+    });
+
+    // ถ้ามีผลลัพธ์ แสดงรายการใหม่ ถ้าไม่มี ให้ซ่อน
+    if (filteredFlights.length > 0) {
+        generateAircraftList(filteredFlights);
+        listContainer.style.display = "block"; // แสดงรายการ
+    } else {
+        listContainer.style.display = "none"; // ซ่อนทั้งหมดถ้าไม่มีผลลัพธ์
+    }
+}
+
+
 
 
 
@@ -447,39 +653,10 @@ document.addEventListener("keydown", function (event) {
     }
 });
 
-document.getElementById('searchBtn').addEventListener('click', function () {
-    const searchValue = document.getElementById('searchBox').value.trim().toUpperCase();
-
-    const flight = flightData.find(flight => flight.aircraftNumber.toUpperCase() === searchValue);
-
-    if (flight) {
-        updateSidebar(flight);
-        map.setView([flight.latitude, flight.longitude], 8);
-    } else {
-        alert('ไม่พบเครื่องบินที่มีหมายเลขนี้');
-    }
-});
 
 
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById('searchBtn').addEventListener('click', function () {
-        const searchBox = document.getElementById('searchBox');
-        if (searchBox) {
-            const searchValue = searchBox.value.trim().toUpperCase();
 
-            const flight = flightData.find(flight => flight.aircraftNumber.toUpperCase() === searchValue);
 
-            if (flight) {
-                updateSidebar(flight);
-                map.setView([flight.latitude, flight.longitude], 8);
-            } else {
-                alert('ไม่พบเครื่องบินที่มีหมายเลขนี้');
-            }
-        } else {
-            console.error('ไม่พบ input ที่มี id="searchBox"');
-        }
-    });
-});
 
 
 function setupAircraftListToggle() {
@@ -494,50 +671,7 @@ function setupAircraftListToggle() {
     }
 }
 
-function generateAircraftList() {
-    const listContainer = document.getElementById('aircraftList');
-    listContainer.innerHTML = ""; // ล้างข้อมูลเก่า
 
-    let availableCount = 0;
-    let unavailableCount = 0;
-
-    flightData.forEach(flight => {
-        const listItem = document.createElement('li');
-        listItem.classList.add("aircraft-item");
-
-        // กำหนดสัญลักษณ์สถานะ (สีเขียว/แดง)
-        const statusIcon = document.createElement('span');
-        statusIcon.style.width = '10px';
-        statusIcon.style.height = '10px';
-        statusIcon.style.borderRadius = '50%';
-        statusIcon.style.marginRight = '10px'; // เว้นระยะขอบ
-
-        if (flight.status.toLowerCase() === "yes") {
-            statusIcon.style.backgroundColor = 'green'; // ใช้ได้
-            availableCount++;
-        } else {
-            statusIcon.style.backgroundColor = 'red'; // ใช้ไม่ได้
-            unavailableCount++;
-        }
-
-        listItem.textContent = `${flight.name} (${flight.aircraftNumber})`;
-        listItem.insertBefore(statusIcon, listItem.firstChild); // ใส่สัญลักษณ์ที่หน้าลิสต์
-
-        listItem.addEventListener("click", () => {
-            updateSidebar(flight);
-            map.setView([flight.latitude, flight.longitude], 8);
-        });
-
-        listContainer.appendChild(listItem);
-    });
-
-    // แสดงจำนวนเครื่องบินที่ใช้งานได้และไม่ได้
-    const statusSummary = document.getElementById('statusSummary');
-    statusSummary.innerHTML = `
-        <p>✔️ใช้งานได้: ${availableCount} </p>
-        <p>❌ใช้งานไม่ได้: ${unavailableCount} </p>
-    `;
-}
 
 const toggleListBtn = document.getElementById("toggleListBtn");
 const aircraftList = document.getElementById("aircraftList");

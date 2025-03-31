@@ -175,7 +175,7 @@ body, html {
     margin-top: 50px;  /* เพิ่มระยะห่างจาก #statusSummary */
     padding: 10px;
     overflow-y: auto;
-    max-height: 1000px;
+    max-height: 500px;
     position: absolute;
     top: 2px;
     left: 120px;
@@ -310,6 +310,12 @@ body, html {
     .aircraft-list {
         font-size: 8px; /* ขนาดฟอนต์ของลิสต์เครื่องบิน */
     }
+    #missionBaseFilter {
+        width: 100%;
+        max-width: none;
+        font-size: 14px;
+        padding: 8px;
+    }
     
 }
 
@@ -338,5 +344,47 @@ body, html {
     }
 }
 
+
+
+.search-wrapper {
+    position: relative;  /* ทำให้ตำแหน่งของปุ่มอยู่ภายในช่องค้นหา */
+    width: 100%; /* ช่องค้นหาจะครอบคลุมพื้นที่คอนเทนเนอร์ */
+    max-width: 250px; /* กำหนดความกว้างสูงสุด */
+    margin: 10px auto;
+}
+
+#missionBaseFilter {
+    width: 70%; /* ทำให้ช่องค้นหากว้างเต็มพื้นที่ */
+    padding: 10px;
+    font-size: 10px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    outline: none;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-left: 12px; /* เพิ่ม margin-left เพื่อขยับไปทางขวา */
+}
+
+#missionBaseFilter:focus {
+    border-color: #0056b3;
+    box-shadow: 0px 0px 12px rgba(0, 123, 255, 0.6);
+}
+
+.clear-btn {
+    position: absolute;
+    right: 10px;  /* ชิดขวา */
+    top: 50%;
+    transform: translateY(-50%); /* กึ่งกลางแนวตั้ง */
+    font-size: 18px;  /* ขนาดกากบาท */
+    background-color: transparent;  /* ไม่มีพื้นหลัง */
+    color: #ff0000;  /* ใช้สีที่เข้ากับช่องค้นหา */
+    border: none;
+    cursor: pointer;
+    line-height: 20px;
+}
+
+.clear-btn:hover {
+    color: #f44336;  /* เปลี่ยนสีเมื่อ hover */
+}
 
 
