@@ -405,52 +405,52 @@ function initMap() {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('clearSearchBtn').addEventListener('click', function () {
-        // เคลียร์ค่าที่กรอกในช่องค้นหา
-        document.getElementById('missionBaseFilter').value = "";
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function () {
+            // เคลียร์ค่าที่กรอกในช่องค้นหา
+            document.getElementById('missionBaseFilter').value = "";
 
-        // ลบมาร์กเกอร์ที่แสดงอยู่ในแผนที่
-        markers.forEach(function(markerObj) {
-            markerObj.marker.remove(); // ลบมาร์กเกอร์
-        });
-        markers = []; // รีเซ็ต array ของมาร์กเกอร์
-
-        // หากต้องการให้ลิสรายการเครื่องบินแสดงทั้งหมดเมื่อเคลียร์การค้นหา
-        generateAircraftList(flightData);
-
-        // เพิ่มมาร์กเกอร์ใหม่ทั้งหมดที่แผนที่
-        flightData.forEach(flight => {
-            // ตรวจสอบว่าเป็นเฮลิคอปเตอร์หรือไม่
-            const isHelicopter = flight.type === "helicopter";
-            const iconUrl = isHelicopter ? "helicopter.svg" : "airplane.svg"; // เลือกไอคอนตามประเภทยาน
-
-            // ตั้งค่าสีของเงาตามสถานะ
-            const shadowColor = flight.status.toUpperCase() === "YES" 
-                ? "rgb(4, 172, 54)"  // สีเขียวสำหรับใช้งานได้
-                : "rgba(255, 0, 0, 1)";  // สีแดงสำหรับใช้งานไม่ได้
-
-            // สร้างไอคอนแบบ divIcon
-            const vehicleIcon = L.divIcon({
-                className: 'custom-icon',  // ตั้งคลาส CSS เพื่อจัดการสไตล์
-                html: `<img src="${iconUrl}" style="width: 34px; height: 34px; filter: drop-shadow(0 0 0.5px ${shadowColor})">`,  // ใช้ filter ใน inline CSS
-                iconSize: [34, 34],
-                iconAnchor: [16, 32],
-                popupAnchor: [0, -32]
+            // ลบมาร์กเกอร์ที่แสดงอยู่ในแผนที่
+            markers.forEach(function(markerObj) {
+                markerObj.marker.remove(); // ลบมาร์กเกอร์
             });
+            markers = []; // รีเซ็ต array ของมาร์กเกอร์
 
-            // สร้างมาร์กเกอร์
-            const marker = L.marker([flight.latitude, flight.longitude], { icon: vehicleIcon })
-                .addTo(map)
-                .bindTooltip(`${flight.aircraftNumber}`, { permanent: false, direction: "top" })
-                .on('click', function () {
-                    updateSidebar(flight);
+            // หากต้องการให้ลิสรายการเครื่องบินแสดงทั้งหมดเมื่อเคลียร์การค้นหา
+            generateAircraftList(flightData);
+
+            // เพิ่มมาร์กเกอร์ใหม่ทั้งหมดที่แผนที่
+            flightData.forEach(flight => {
+                const isHelicopter = flight.type === "helicopter";
+                const iconUrl = isHelicopter ? "helicopter.svg" : "airplane.svg";
+                const shadowColor = flight.status.toUpperCase() === "YES" 
+                    ? "rgb(4, 172, 54)"
+                    : "rgba(255, 0, 0, 1)";
+
+                const vehicleIcon = L.divIcon({
+                    className: 'custom-icon',
+                    html: `<img src="${iconUrl}" style="width: 34px; height: 34px; filter: drop-shadow(0 0 0.5px ${shadowColor})">`,
+                    iconSize: [34, 34],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32]
                 });
 
-            // เก็บข้อมูลมาร์กเกอร์
-            markers.push({ flight, marker });
+                const marker = L.marker([flight.latitude, flight.longitude], { icon: vehicleIcon })
+                    .addTo(map)
+                    .bindTooltip(`${flight.aircraftNumber}`, { permanent: false, direction: "top" })
+                    .on('click', function () {
+                        updateSidebar(flight);
+                    });
+
+                markers.push({ flight, marker });
+            });
         });
-    });
+    } else {
+        console.error('Element with ID "clearSearchBtn" not found!');
+    }
 });
+
 
 
 
